@@ -123,7 +123,7 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
   const authorSlug = author?.slug;
   
   // Generate encoded article URL for sharing
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mkule.org";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://mkule.vercel.app";
   const articleUrl = `${siteUrl}/news/${slug}`;
   const encodedUrl = encodeURIComponent(articleUrl);
   
