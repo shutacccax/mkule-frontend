@@ -1,18 +1,16 @@
 const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
 
+const ISSUES_CAT_ID = 9;
+
 export async function getPosts() {
-  // Bypasses Pantheon's Varnish cache by changing the URL every 60 seconds
-  const cacheBuster = Math.floor(Date.now() / 60000);
-
+  const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+  // We exclude Category 9 so issues don't show up in the Hero or Latest feed
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?_embed&cb=${cacheBuster}`,
-    { next: { revalidate: 60 } } 
+    `${baseUrl}/wp-json/wp/v2/posts?_embed&per_page=10&categories_exclude=${ISSUES_CAT_ID}`,
+    { next: { revalidate: 60 } }
   );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch posts");
-  }
-
+  
+  if (!res.ok) throw new Error("Failed to fetch posts");
   return res.json();
 }
 
@@ -55,4 +53,26 @@ export async function getAuthorData(authorId: string) {
   const res = await fetch(`${baseUrl}/wp-json/wp/v2/users/${authorId}`);
   if (!res.ok) return null;
   return res.json();
+}
+
+export async function getLatestIssues() {
+  const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+  // This ensures Pantheon gives us fresh data every time you refresh
+  const cacheBuster = Date.now(); 
+
+  const res = await fetch(
+    `${baseUrl}/wp-json/wp/v2/posts?categories=${ISSUES_CAT_ID}&_embed&per_page=4&cb=${cacheBuster}`,
+    { 
+      next: { revalidate: 0 }, // Force zero caching for this specific call while debugging
+      cache: 'no-store' 
+    }
+  );
+
+  if (!res.ok) return [];
+  const data = await res.json();
+  
+  // LOG THIS: Check your terminal/console. If it says [], the ID or Category is wrong.
+  console.log("Fetched Issues:", data.length); 
+  
+  return data;
 }

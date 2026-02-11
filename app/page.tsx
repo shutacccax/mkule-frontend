@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { getPosts, getPostsByCategory } from "@/lib/api";
+import { getPosts, getPostsByCategory, getLatestIssues } from "@/lib/api"; 
+import IssueCard from "@/components/IssueCard";
 import CategorySection from "@/components/CategorySection";
 
 // Enables Incremental Static Regeneration for the homepage
@@ -39,10 +40,15 @@ function CategoryLabel({ post }: { post: any }) {
 }
 
 export default async function Home() {
-  const posts = await getPosts();
+  // Fetch everything in one go
+  const [posts, issues] = await Promise.all([
+    getPosts(),
+    getLatestIssues()
+  ]);
+
   const featured = posts[0];
-  const latestSidebar = posts.slice(1, 7); // Sidebar: next 6 posts
-  const subFeatures = posts.slice(7, 10);  // Bottom Row: next 3 posts
+  const latestSidebar = posts.slice(1, 10);
+  const subFeatures = posts.slice(7, 10);
 
   const categories = ["news", "features", "culture", "opinion", "editorial", "grafx"];
   const categoryData = await Promise.all(
@@ -138,7 +144,7 @@ return (
                     />
                   </a>
                   <div 
-                    className="text-sm text-gray-600 line-clamp-2 font-normal leading-relaxed"
+                    className="text-sm text-gray-600 line-clamp-2 font-normal leading-relaxed mt-3"
                     dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                   />
                   <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tighter text-gray-400">
@@ -154,11 +160,11 @@ return (
         {/* RIGHT COLUMN: Sidebar Latest (6 Items) */}
         <aside className="lg:col-span-4 lg:border-l lg:border-gray-300 lg:pl-8 hidden lg:block">
           <div className="flex items-center gap-2 mb-6">
-            <h3 className="text-[13px] font-black uppercase tracking-[0.2em] text-brand">The Latest</h3>
+            <h3 className="text-[13px] font-black uppercase tracking-[0.2em] text-brand">Latest</h3>
             <div className="h-[1px] flex-1 bg-gray-200" />
           </div>
           <div className="space-y-6">
-            {posts.slice(1, 7).map((post: Post) => (
+            {posts.slice(1, 10).map((post: Post) => (
               <a 
                 key={post.id} 
                 href={`/news/${post.slug}`} 
@@ -174,14 +180,14 @@ return (
                   )}
                 </div>
                 <div className="col-span-9 space-y-1">
-                  <p className="text-[9px] font-sans font-black uppercase text-brand">
+                  <p className="text-[10px] font-sans font-black uppercase text-brand">
                     {post._embedded?.["wp:term"]?.[0]?.[0]?.name || "News"}
                   </p>
                   <h4 
-                    className="font-serif font-bold text-[14px] leading-tight group-hover:text-brand transition-colors line-clamp-2"
+                    className="font-serif font-bold text-[16px] leading-tight group-hover:text-brand transition-colors line-clamp-2"
                     dangerouslySetInnerHTML={{ __html: post.title.rendered }}
                   />
-                  <div className="flex items-center gap-1.5 text-[8px] font-bold uppercase tracking-tighter text-gray-400">
+                  <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-tighter text-gray-400 mt-2">
                     <span className="text-gray-600 italic">/ {post._embedded?.author?.[0]?.name || "Staff"}</span>
                     <span>{new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                   </div>
@@ -236,6 +242,55 @@ return (
           );
         })}
       </div>
+
+      {/* --- PRINT ISSUES BOOKSHELF (New) --- */}
+      {/* --- PRINT ISSUES BOOKSHELF (Homepage Fix) --- */}
+      {issues.length > 0 && (
+        <section className="border-t border-gray-300 pt-16 pb-12 mt-12">
+          <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center gap-4">
+              {/* The Red Pill Tag */}
+              <div className="bg-brand px-4 py-1.5 rounded-sm shadow-sm">
+                <h2 className="text-xs font-sans font-black uppercase text-white tracking-widest leading-none">
+                  Print Edition
+                </h2>
+              </div>
+              {/* Decorative Line */}
+              <div className="h-[1px] flex-1 bg-gray-200 hidden md:block" />
+            </div>
+
+            <a 
+              href="/issues" 
+              className="text-[10px] font-sans font-black uppercase tracking-[0.2em] text-gray-400 hover:text-brand transition-colors whitespace-nowrap ml-4"
+            >
+              Full Archive →
+            </a>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
+            {issues.map((issue: any) => {
+              // FIX: Use 'pdf_link' to match your ACF setup and Issues page
+              let rawLink = issue.acf?.pdf_link || "#";
+              
+              // Clean for Google Drive preview mode
+              let cleanLink = rawLink;
+              if (cleanLink.includes("drive.google.com")) {
+                cleanLink = cleanLink.replace(/\/view.*/, "/preview").replace(/\/edit.*/, "/preview");
+              }
+
+              return (
+                <IssueCard 
+                  key={issue.id}
+                  title={issue.title.rendered}
+                  cover={issue._embedded?.["wp:featuredmedia"]?.[0]?.source_url || "/placeholder.jpg"}
+                  pdfLink={cleanLink}
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
+      
     </main>
   );
 }

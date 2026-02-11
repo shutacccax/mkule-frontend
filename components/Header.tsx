@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react"; // 1. Import useTransition
+import { useEffect, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -12,16 +12,14 @@ export default function Header() {
   const [query, setQuery] = useState("");
   
   const router = useRouter();
-  const [isPending, startTransition] = useTransition(); // 2. Initialize the hook
+  const [isPending, startTransition] = useTransition();
 
+  // ... (Scroll and Search Logic remains exactly the same) ...
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      if (offset > 60) {
-        setScrolled(true);
-      } else if (offset < 10) {
-        setScrolled(false);
-      }
+      if (offset > 60) setScrolled(true);
+      else if (offset < 10) setScrolled(false);
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
@@ -30,17 +28,15 @@ export default function Header() {
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!query.trim()) return;
-
-    // 3. Wrap the router.push in startTransition
-    // This tells React to treat this as a background transition
     startTransition(() => {
       router.push(`/search?q=${encodeURIComponent(query)}`);
     });
-    
-    // Note: We keep the search open or maintain the query until navigation starts
-    // to prevent jarring UI switches.
     setSearchOpen(false); 
   }
+
+  // DEFINING MENU ITEMS
+  // We add "Issues" to this list
+  const navItems = ["News", "Features", "Culture", "Opinion", "Editorial", "Grafx", "Issues"];
 
   return (
     <>
@@ -49,15 +45,10 @@ export default function Header() {
       <header 
         className={`fixed top-0 left-0 right-0 z-50 bg-white transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] ${
             scrolled 
-            // SCROLLED STATE: A deep, very wide, and soft shadow.
-            // 0 Y-offset, large 50px blur, negative spread to keep it from looking thick, slightly higher opacity.
             ? "shadow-[0_25px_50px_-12px_rgba(0,0,0,0.08)] border-b border-gray-100" 
-            // TOP STATE: A very subtle, wide-reaching ambient glow.
-            // 0 Y-offset, 35px blur, very low opacity.
             : "shadow-[0_15px_35px_-10px_rgba(0,0,0,0.03)] border-b border-transparent"
         }`}
         >
-        {/* OPTIONAL: Global Loader Indicator directly in Header if your RouteLoader doesn't catch it */}
         {isPending && (
           <div className="absolute top-0 left-0 w-full h-[2px] bg-gray-100 overflow-hidden">
             <div className="h-full bg-brand animate-indeterminate-bar"></div>
@@ -104,8 +95,6 @@ export default function Header() {
 
             {/* RIGHT: Search Area */}
             <div className="flex-1 basis-0 flex justify-end items-center">
-              
-              {/* DESKTOP SEARCH */}
               <div className="hidden md:flex items-center justify-end relative">
                 <button 
                   onClick={() => setSearchOpen(true)} 
@@ -113,7 +102,6 @@ export default function Header() {
                     searchOpen ? "opacity-0 pointer-events-none scale-75 absolute" : "opacity-100 scale-100 relative"
                   }`}
                 >
-                  {/* 4. Use isPending to show a spinner icon instead of the magnifying glass while loading */}
                   {isPending ? (
                      <svg className="animate-spin h-5 w-5 text-brand" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -133,10 +121,10 @@ export default function Header() {
                     <input
                       type="text" 
                       autoFocus={searchOpen}
-                      placeholder={isPending ? "SEARCHING..." : "SEARCH..."} // Feedback in placeholder
+                      placeholder={isPending ? "SEARCHING..." : "SEARCH..."}
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      disabled={isPending} // Disable input while searching
+                      disabled={isPending}
                       className="w-full bg-transparent border-b border-gray-200 focus:border-brand outline-none text-[11px] font-sans font-bold uppercase tracking-widest py-1 pl-0 pr-6 text-gray-900 placeholder:text-gray-300 transition-colors disabled:opacity-50"
                     />
                     <button 
@@ -144,7 +132,7 @@ export default function Header() {
                       onClick={() => { setSearchOpen(false); setQuery(""); }} 
                       className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-300 hover:text-brand transition-colors p-1"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                       </svg>
@@ -154,13 +142,10 @@ export default function Header() {
               </div>
 
               {/* MOBILE SEARCH TOGGLE */}
-              <button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="md:hidden text-gray-400 hover:text-brand p-2 transition-colors relative z-10"
-              >
+              <button onClick={() => setSearchOpen(!searchOpen)} className="md:hidden text-gray-400 hover:text-brand p-2 transition-colors relative z-10">
                 {searchOpen ? (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 ) : (
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -180,10 +165,11 @@ export default function Header() {
             }`}
           >
             <div className="flex gap-10">
-              {["News", "Features", "Culture", "Opinion", "Editorial", "Grafx"].map((item) => (
+              {navItems.map((item) => (
                 <Link 
                   key={item} 
-                  href={`/category/${item.toLowerCase()}`} 
+                  // LOGIC UPDATE: If item is "Issues", go to "/issues", else go to "/category/..."
+                  href={item === "Issues" ? "/issues" : `/category/${item.toLowerCase()}`} 
                   className="text-[12px] font-sans font-bold uppercase tracking-[0.25em] text-gray-500 hover:text-brand transition-colors whitespace-nowrap relative group"
                 >
                   {item}
@@ -197,8 +183,14 @@ export default function Header() {
         {/* MOBILE MENU */}
         {mobileOpen && (
           <div className="absolute top-full left-0 right-0 bg-white border-t border-gray-100 p-8 flex flex-col gap-6 shadow-2xl animate-in slide-in-from-top-2 duration-300">
-             {["News", "Features", "Culture", "Opinion", "Editorial", "Grafx"].map((item) => (
-                <Link key={item} href={`/category/${item.toLowerCase()}`} className="text-sm font-sans font-black uppercase tracking-widest text-center hover:text-brand" onClick={() => setMobileOpen(false)}>
+             {navItems.map((item) => (
+                <Link 
+                  key={item} 
+                  // LOGIC UPDATE: Apply same logic to mobile menu
+                  href={item === "Issues" ? "/issues" : `/category/${item.toLowerCase()}`} 
+                  className="text-sm font-sans font-black uppercase tracking-widest text-center hover:text-brand" 
+                  onClick={() => setMobileOpen(false)}
+                >
                   {item}
                 </Link>
               ))}

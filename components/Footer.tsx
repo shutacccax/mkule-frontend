@@ -19,11 +19,9 @@ export default function Footer() {
               priority
             />
             <div className="space-y-2">
-              {/* 1. Removed 'uppercase' class as requested */}
               <p className="text-[11px] font-sans font-bold tracking-tight text-gray-500">
                 Official student publication of the University of the Philippines Manila
               </p>
-              {/* 2. Added Motto in uppercase brand style */}
               <p className="text-[10px] font-sans font-black uppercase tracking-[0.3em] text-brand">
                 Magna est veritas et prevaelebit
               </p>
@@ -44,8 +42,14 @@ export default function Footer() {
             
             {/* SECTIONAL NAVIGATION */}
             <nav className="flex flex-wrap md:justify-end gap-x-8 gap-y-4 text-[11px] font-sans font-black uppercase tracking-[0.15em] text-gray-600 mb-8">
-              {["News", "Features", "Culture", "Opinion", "Editorial", "Grafx"].map((cat) => (
-                <a key={cat} href={`/category/${cat.toLowerCase()}`} className="hover:text-brand transition-colors">
+              {/* Added "Issues" to the list */}
+              {["News", "Features", "Culture", "Opinion", "Editorial", "Grafx", "Issues"].map((cat) => (
+                <a 
+                  key={cat} 
+                  // LOGIC CHECK: If 'Issues', go to /issues. Else, go to /category/...
+                  href={cat === "Issues" ? "/issues" : `/category/${cat.toLowerCase()}`} 
+                  className="hover:text-brand transition-colors"
+                >
                   {cat}
                 </a>
               ))}
@@ -76,7 +80,7 @@ export default function Footer() {
   );
 }
 
-// Fixed type: Use React.ReactElement instead of JSX.Element
+// ... (SocialIcon component remains exactly the same)
 function SocialIcon({ href, platform }: { href: string; platform: string }) {
   const icons: Record<string, React.ReactElement> = {
     facebook: (
@@ -94,7 +98,6 @@ function SocialIcon({ href, platform }: { href: string; platform: string }) {
         <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
       </svg>
     ),
-    // Correct TikTok "Note" SVG path
     tiktok: (
       <svg fill="currentColor" viewBox="0 0 24 24" className="w-4 h-4">
         <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1 .05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1.04-.1z" />

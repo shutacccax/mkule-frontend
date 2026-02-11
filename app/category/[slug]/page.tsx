@@ -1,3 +1,4 @@
+import Link from "next/link"; // 1. Import Link
 import Image from "next/image";
 import Pagination from "@/components/Pagination";
 
@@ -60,7 +61,7 @@ export default async function CategoryPage({
   if (!data) {
     return (
       <div className="p-20 text-center font-serif italic text-gray-500">
-        Category "{slug}" not found or has no posts.
+        Category "{slug}" not found.
       </div>
     );
   }
@@ -70,7 +71,7 @@ export default async function CategoryPage({
   return (
     <main className="max-w-7xl mx-auto px-6 py-16">
       
-      {/* --- CATEGORY HEADER --- */}
+      {/* HEADER */}
       <header className="mb-12">
         <div className="flex items-center gap-4">
           <div className="bg-brand px-3 py-1 rounded-sm shadow-sm">
@@ -84,14 +85,16 @@ export default async function CategoryPage({
 
       <div className="grid lg:grid-cols-12 gap-16">
 
-        {/* --- LEFT COLUMN: ARTICLE FEED --- */}
+        {/* FEED */}
         <div className="lg:col-span-8">
           <div className="space-y-12">
-            {posts.map((post: Post) => (
+            {posts.map((post: any) => (
               <article key={post.id} className="group grid md:grid-cols-12 gap-6 pb-12 border-b border-gray-100 last:border-0">
+                
                 {/* Thumbnail */}
                 <div className="md:col-span-4">
-                  <a href={`/news/${post.slug}`} className="block overflow-hidden rounded-lg bg-gray-100 aspect-[4/3]">
+                  {/* 2. CHANGE: <a> to <Link> */}
+                  <Link href={`/news/${post.slug}`} className="block overflow-hidden rounded-lg bg-gray-100 aspect-[4/3]">
                     {post._embedded?.["wp:featuredmedia"] ? (
                       <img
                         src={post._embedded["wp:featuredmedia"][0].source_url}
@@ -103,7 +106,7 @@ export default async function CategoryPage({
                         Mkule News
                       </div>
                     )}
-                  </a>
+                  </Link>
                 </div>
 
                 {/* Content */}
@@ -111,30 +114,33 @@ export default async function CategoryPage({
                   <p className="text-[10px] font-sans font-black uppercase tracking-widest text-brand">
                     {slug}
                   </p>
-                  <a href={`/news/${post.slug}`}>
+                  
+                  {/* 3. CHANGE: <a> to <Link> */}
+                  <Link href={`/news/${post.slug}`}>
                     <h2
                       className="text-2xl font-serif font-bold leading-tight group-hover:text-brand transition-colors"
                       dangerouslySetInnerHTML={{ __html: post.title.rendered }}
                     />
-                  </a>
+                  </Link>
+
                   <div
                     className="text-sm text-gray-600 line-clamp-2 font-light tracking-tight leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                   />
                   
-                  {/* Updated: Stacking Byline on top of Date with Clickable Author */}
                   <div className="pt-1 flex flex-col gap-0.5">
-                     {post._embedded?.author?.[0] && (
-                       <a 
-                         href={`/author/${post._embedded.author[0].slug}`}
-                         className="text-[10px] font-bold uppercase tracking-tighter text-gray-500 hover:text-brand transition-colors duration-300"
-                       >
-                         / {post._embedded.author[0].name}
-                       </a>
-                     )}
-                     <p className="text-[10px] font-medium uppercase tracking-tighter text-gray-400">
-                        {new Date(post.date).toLocaleDateString()}
-                     </p>
+                      {post._embedded?.author?.[0] && (
+                        /* 4. CHANGE: <a> to <Link> */
+                        <Link 
+                          href={`/author/${post._embedded.author[0].slug}`}
+                          className="text-[10px] font-bold uppercase tracking-tighter text-gray-500 hover:text-brand transition-colors duration-300"
+                        >
+                          / {post._embedded.author[0].name}
+                        </Link>
+                      )}
+                      <p className="text-[10px] font-medium uppercase tracking-tighter text-gray-400">
+                         {new Date(post.date).toLocaleDateString()}
+                      </p>
                   </div>
                 </div>
               </article>
