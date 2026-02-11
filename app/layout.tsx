@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RouteLoader from "@/components/RouteLoader";
 import { GoogleAnalytics } from '@next/third-parties/google'
+import FacebookSDK from "@/components/FacebookSDK";
 
 export const revalidate = 60;
 
@@ -48,10 +49,8 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <RouteLoader />
         </Suspense>
-        <Script
-          src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v24.0"
-          strategy="lazyOnload"
-        />
+        
+        <FacebookSDK />
 
         {children}
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />

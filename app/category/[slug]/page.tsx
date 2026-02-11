@@ -121,9 +121,18 @@ export default async function CategoryPage({
                     className="text-sm text-gray-600 line-clamp-2 font-light tracking-tight leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                   />
-                  <p className="text-[10px] font-bold uppercase tracking-tighter text-gray-400 pt-1">
-                     {new Date(post.date).toLocaleDateString()}
-                  </p>
+                  
+                  {/* Updated: Stacking Byline on top of Date */}
+                  <div className="pt-1 flex flex-col gap-0.5">
+                     {post._embedded?.author?.[0]?.name && (
+                       <p className="text-[10px] font-bold uppercase tracking-tighter text-gray-500">
+                         / {post._embedded.author[0].name}
+                       </p>
+                     )}
+                     <p className="text-[10px] font-medium uppercase tracking-tighter text-gray-400">
+                        {new Date(post.date).toLocaleDateString()}
+                     </p>
+                  </div>
                 </div>
               </article>
             ))}
