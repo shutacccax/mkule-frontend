@@ -64,8 +64,6 @@ return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       
       {/* --- HERO & SIDEBAR CONTAINER --- */}
-      {/* Added border-b and pb-16 to create the horizontal line at the bottom */}
-      {/* --- HERO & SIDEBAR CONTAINER --- */}
       <section className="grid lg:grid-cols-12 gap-12 mb-16 border-b border-gray-300 pb-10">
         
         {/* LEFT COLUMN: Hero + Sub-Features */}
@@ -107,7 +105,7 @@ return (
                 
                 {/* Big Readable Excerpt */}
                 <div 
-                  className="text-gray-700 text-lg md:text-xl font-normal line-clamp-2 max-w-2xl leading-relaxed mt-4"
+                  className="text-gray-700 text-lg md:text-l font-normal line-clamp-4 max-w-2xl leading-relaxed mt-4"
                   dangerouslySetInnerHTML={{ __html: featured.excerpt.rendered }}
                 />
                 

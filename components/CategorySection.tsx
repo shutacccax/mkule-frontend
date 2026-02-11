@@ -8,55 +8,77 @@ export default function CategorySection({ title, secondaryTitle, posts, secondar
     const featured = posts[0];
     return (
       <section className="py-2">
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 lg:gap-12">
+        {/* MOBILE MODE: Show as a standard grid (Matches default news layout) 
+          Visible only on small screens, hidden on Large (lg)
+        */}
+        <div className="lg:hidden space-y-8">
+          <div className="flex justify-between items-center">
+            <Tag title={title} />
+            <ViewAll link={title} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            {posts.slice(0, 4).map((post: any) => (
+              <CompactCard key={post.id} post={post} />
+            ))}
+          </div>
           
-          {/* Main Editorial - 60% (Full Height) */}
+          <hr className="border-gray-100 my-8" />
+
+          <div className="flex justify-between items-center">
+            <Tag title={secondaryTitle} />
+            <ViewAll link={secondaryTitle} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            {secondaryPosts?.slice(0, 2).map((post: any) => (
+              <CompactCard key={post.id} post={post} />
+            ))}
+          </div>
+        </div>
+
+        {/* DESKTOP MODE: Keep your 60/40 Split 
+          Hidden on mobile, visible on Large (lg)
+        */}
+        <div className="hidden lg:grid lg:grid-cols-10 gap-12">
+          {/* Main Editorial - 60% */}
           <div className="lg:col-span-6 group">
             <div className="flex justify-between items-center mb-4">
               <Tag title={title} />
               <ViewAll link={title} />
             </div>
-            <a href={`/news/${featured.slug}`} className="block space-y-4">
+            <Link href={`/news/${featured.slug}`} className="block space-y-4">
               <div className="aspect-[16/10] overflow-hidden rounded-lg bg-gray-100 shadow-sm">
                 <img 
                   src={featured._embedded?.["wp:featuredmedia"]?.[0]?.source_url} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                 />
               </div>
-              <h3 className="text-3xl md:text-4xl font-serif font-black leading-tight group-hover:text-brand transition duration-300" dangerouslySetInnerHTML={{ __html: featured.title.rendered }} />
-              <div className="text-gray-700 text-lg md:text-m font-normal line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: featured.excerpt.rendered }} />
+              <h3 className="text-4xl font-serif font-black leading-tight group-hover:text-brand transition duration-300" dangerouslySetInnerHTML={{ __html: featured.title.rendered }} />
+              <div className="text-gray-700 text-lg font-normal line-clamp-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: featured.excerpt.rendered }} />
               <Metadata author={featured._embedded?.author?.[0]?.name} date={featured.date} />
-            </a>
+            </Link>
           </div>
 
-          {/* Opinion Column - 40% (Compact List) */}
+          {/* Opinion Column - 40% */}
           <div className="lg:col-span-4 lg:border-l lg:border-gray-100 lg:pl-8 flex flex-col">
             <div className="flex justify-between items-center mb-6">
               <Tag title={secondaryTitle} />
               <ViewAll link={secondaryTitle} />
             </div>
             
-            {/* CHANGED: Switched to space-y-6 and Side-by-Side layout */}
             <div className="flex-1 flex flex-col justify-between space-y-2"> 
               {secondaryPosts?.slice(0, 4).map((post: any) => (
-                <a key={post.id} href={`/news/${post.slug}`} className="group grid grid-cols-12 gap-4 items-start border-b border-gray-50 pb-6 last:border-0 last:pb-0">
-                  
-                  {/* Small Thumbnail (Square) */}
+                <Link key={post.id} href={`/news/${post.slug}`} className="group grid grid-cols-12 gap-4 items-start border-b border-gray-50 pb-6 last:border-0 last:pb-0">
                   <div className="col-span-4 aspect-square overflow-hidden rounded-md bg-gray-100 shadow-sm">
                      <img 
                         src={post._embedded?.["wp:featuredmedia"]?.[0]?.source_url} 
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                      />
                   </div>
-                  
-                  {/* Text Content */}
                   <div className="col-span-8 space-y-2">
                     <h5 className="font-serif font-bold text-base leading-snug group-hover:text-brand transition duration-300 line-clamp-2" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
-                    <div className="text-sm text-gray-500 line-clamp-2 font-normal leading-relaxed" dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }} />
                     <Metadata author={post._embedded?.author?.[0]?.name} date={post.date} />
                   </div>
-
-                </a>
+                </Link>
               ))}
             </div>
           </div>
