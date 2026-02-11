@@ -38,3 +38,21 @@ export async function getPostsByCategory(slug: string, limit = 4) {
 
   return postRes.json();
 }
+
+export async function getPostsByAuthor(authorId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+  const cacheBuster = Math.floor(Date.now() / 60000);
+
+  const res = await fetch(
+    `${baseUrl}/wp-json/wp/v2/posts?author=${authorId}&_embed&cb=${cacheBuster}`,
+    { next: { revalidate: 60 } }
+  );
+  return res.json();
+}
+
+export async function getAuthorData(authorId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+  const res = await fetch(`${baseUrl}/wp-json/wp/v2/users/${authorId}`);
+  if (!res.ok) return null;
+  return res.json();
+}

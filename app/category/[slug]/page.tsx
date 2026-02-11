@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Pagination from "@/components/Pagination";
 
+// --- TYPES ---
 interface Post {
   id: number;
   slug: string;
@@ -8,14 +9,16 @@ interface Post {
   title: { rendered: string };
   excerpt: { rendered: string };
   _embedded?: {
-    author?: Array<{ name: string }>;
+    author?: Array<{ 
+      name: string; 
+      slug: string; // Added slug for clickable byline
+    }>;
     "wp:featuredmedia"?: Array<{ source_url: string }>;
   };
 }
 
 async function getPostsByCategory(slug: string, page: number) {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
-  // 1. Add the Minute Bucket cache-buster
   const cacheBuster = Math.floor(Date.now() / 60000); 
 
   const catRes = await fetch(`${baseUrl}/wp-json/wp/v2/categories?slug=${slug}`, {
@@ -27,7 +30,6 @@ async function getPostsByCategory(slug: string, page: number) {
   const categoryId = catData[0].id;
 
   const postRes = await fetch(
-    // 2. Add &cb=${cacheBuster} to the end of this URL
     `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=6&page=${page}&_embed&cb=${cacheBuster}`,
     { 
       next: { revalidate: 60 } 
@@ -42,7 +44,6 @@ async function getPostsByCategory(slug: string, page: number) {
   return { posts, totalPages };
 }
 
-// Next.js 15 requires awaiting params and searchParams
 export default async function CategoryPage({ 
   params, 
   searchParams 
@@ -50,7 +51,6 @@ export default async function CategoryPage({
   params: Promise<{ slug: string }>, 
   searchParams: Promise<{ page?: string }> 
 }) {
-  // 3. FIX: Await the asynchronous props
   const { slug } = await params;
   const sParams = await searchParams;
   const currentPage = Number(sParams?.page) || 1;
@@ -122,12 +122,15 @@ export default async function CategoryPage({
                     dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                   />
                   
-                  {/* Updated: Stacking Byline on top of Date */}
+                  {/* Updated: Stacking Byline on top of Date with Clickable Author */}
                   <div className="pt-1 flex flex-col gap-0.5">
-                     {post._embedded?.author?.[0]?.name && (
-                       <p className="text-[10px] font-bold uppercase tracking-tighter text-gray-500">
+                     {post._embedded?.author?.[0] && (
+                       <a 
+                         href={`/author/${post._embedded.author[0].slug}`}
+                         className="text-[10px] font-bold uppercase tracking-tighter text-gray-500 hover:text-brand transition-colors duration-300"
+                       >
                          / {post._embedded.author[0].name}
-                       </p>
+                       </a>
                      )}
                      <p className="text-[10px] font-medium uppercase tracking-tighter text-gray-400">
                         {new Date(post.date).toLocaleDateString()}
@@ -138,7 +141,6 @@ export default async function CategoryPage({
             ))}
           </div>
 
-          {/* 4. Pagination (Kept inside the column) */}
           <div className="mt-12">
             <Pagination
               currentPage={currentPage}
