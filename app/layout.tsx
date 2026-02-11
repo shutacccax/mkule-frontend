@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import RouteLoader from "@/components/RouteLoader";
 import { GoogleAnalytics } from '@next/third-parties/google'
 
+export const revalidate = 60;
 
 const merriweather = Merriweather({
   subsets: ['latin'],

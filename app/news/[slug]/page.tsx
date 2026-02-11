@@ -8,10 +8,12 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+  const cacheBuster = Math.floor(Date.now() / 60000); // Add here
 
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?slug=${slug}&_embed`,
-    { cache: "no-store" }
+    // Add &cb=
+    `${baseUrl}/wp-json/wp/v2/posts?slug=${slug}&_embed&cb=${cacheBuster}`,
+    { next: { revalidate: 60 } }
   );
 
   const data = await res.json();
@@ -72,10 +74,14 @@ function getReadingTime(content: string): number {
   return Math.ceil(wordCount / wordsPerMinute);
 }
 
+// --- HELPERS ---
 async function getPost(slug: string) {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+  const cacheBuster = Math.floor(Date.now() / 60000); // Add here
+
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?slug=${slug}&_embed`,
+    // Add &cb=
+    `${baseUrl}/wp-json/wp/v2/posts?slug=${slug}&_embed&cb=${cacheBuster}`,
     { next: { revalidate: 60 } }
   );
   if (!res.ok) return null;
@@ -85,9 +91,12 @@ async function getPost(slug: string) {
 
 async function getRelatedPosts(categoryId: number, currentPostId: number) {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+  const cacheBuster = Math.floor(Date.now() / 60000); // Add here
+
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=3&exclude=${currentPostId}&_embed`,
-    { cache: "no-store" }
+    // Add &cb=
+    `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=3&exclude=${currentPostId}&_embed&cb=${cacheBuster}`,
+    { next: { revalidate: 60 } }
   );
   if (!res.ok) return [];
   return res.json();
@@ -181,24 +190,34 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
         />
 
         {/* --- 3. BYLINE & SHARE --- */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between py-6 border-y border-gray-100 mb-12 gap-4">
+        {/* --- 3. BYLINE & SHARE --- */}
+        <div className="flex flex-row flex-wrap items-center justify-between py-6 border-y border-gray-100 mb-12 gap-y-4 gap-x-2">
+          
+          {/* Author Block */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-serif italic text-brand font-bold border border-gray-200">
+            {/* shrink-0 prevents the circle from turning into an oval on small screens */}
+            <div className="w-10 h-10 shrink-0 rounded-full bg-gray-50 flex items-center justify-center font-serif italic text-brand font-bold border border-gray-200">
               {authorName.charAt(0)}
             </div>
-            <div>
+            <div className="flex flex-col justify-center">
               <p className="text-[10px] font-sans font-black uppercase tracking-widest text-gray-400 leading-none mb-1">Written By</p>
-              <p className="font-serif font-bold text-lg leading-none">{authorName}</p>
+              {/* line-clamp-1 prevents super long names from breaking the layout */}
+              <p className="font-serif font-bold text-base leading-none text-gray-900 line-clamp-1">{authorName}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-[10px] font-sans font-black uppercase tracking-widest text-gray-400">Share</span>
-            <div className="flex gap-3">
+          {/* Share Block */}
+          <div className="flex items-center gap-3">
+            {/* hidden sm:block hides the word "SHARE" on phones, leaving just the buttons! */}
+            <span className="hidden sm:block text-[10px] font-sans font-black uppercase tracking-widest text-gray-400">
+              Share
+            </span>
+            <div className="flex gap-2">
                 <ShareButton platform="facebook" url={`https://www.facebook.com/sharer/sharer.php?u=${articleUrl}`} />
                 <ShareButton platform="twitter" url={`https://twitter.com/intent/tweet?url=${articleUrl}`} />
             </div>
           </div>
+          
         </div>
 
         {/* --- 4. FEATURED IMAGE --- */}
@@ -220,25 +239,10 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
 
         {/* --- 5. CONTENT --- */}
         <article
-          className="prose prose-2xl max-w-none 
-                     font-sans font-normal tracking-tight
-                     text-xl md:text-[20px] lg:text-[20px] 
-                     prose-p:text-gray-900 
-                     prose-p:font-normal 
-                     prose-p:leading-[1.8]
-                     prose-headings:font-serif 
-                     prose-headings:font-black 
-                     prose-headings:tracking-tighter
-                     prose-blockquote:border-brand 
-                     prose-blockquote:bg-gray-50 
-                     prose-blockquote:py-4 
-                     prose-blockquote:px-10
-                     prose-a:text-brand 
-                     prose-a:font-bold 
-                     hover:prose-a:underline
-                     prose-img:rounded-3xl"
-          dangerouslySetInnerHTML={{ __html: post.content.rendered }}
+        className="prose article-content max-w-none"
+        dangerouslySetInnerHTML={{ __html: post.content.rendered }}
         />
+
 
         {/* --- END MARKER --- */}
         <div className="mt-16 pt-8 border-t border-gray-100">

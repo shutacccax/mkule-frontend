@@ -15,18 +15,23 @@ interface Post {
 
 async function getPostsByCategory(slug: string, page: number) {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+  // 1. Add the Minute Bucket cache-buster
+  const cacheBuster = Math.floor(Date.now() / 60000); 
 
-  // 1. Fetch category ID
-  const catRes = await fetch(`${baseUrl}/wp-json/wp/v2/categories?slug=${slug}`);
+  const catRes = await fetch(`${baseUrl}/wp-json/wp/v2/categories?slug=${slug}`, {
+    next: { revalidate: 3600 } 
+  });
   const catData = await catRes.json();
   if (!catData || !catData.length) return null;
 
   const categoryId = catData[0].id;
 
-  // 2. Fetch posts for that category
   const postRes = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=6&page=${page}&_embed`,
-    { cache: "no-store" }
+    // 2. Add &cb=${cacheBuster} to the end of this URL
+    `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=6&page=${page}&_embed&cb=${cacheBuster}`,
+    { 
+      next: { revalidate: 60 } 
+    }
   );
 
   if (!postRes.ok) return null;

@@ -42,3 +42,65 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif), ui-serif, Georgia, serif;
 }
 
+/* ================= ARTICLE TYPOGRAPHY ================= */
+
+.article-content {
+  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  font-size: 18px;
+  line-height: 1.8;
+  letter-spacing: -0.01em;
+  color: #1f2937;
+}
+
+/* Responsive sizing */
+@media (min-width: 768px) {
+  .article-content {
+    font-size: 21px;
+  }
+}
+
+/* Paragraph spacing */
+.article-content p {
+  margin-bottom: 2rem;
+}
+
+/* Headings */
+.article-content h1,
+.article-content h2,
+.article-content h3,
+.article-content h4 {
+  font-family: var(--font-serif, Georgia, serif);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Blockquote */
+.article-content blockquote {
+  margin: 3rem 0;
+  padding-left: 1.5rem;
+  border-left: 3px solid var(--divider);
+  font-style: italic;
+  color: #374151;
+}
+
+.article-content blockquote p {
+  margin-bottom: 0;
+}
+
+/* Links */
+.article-content a {
+  color: var(--brand, #770000);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.article-content a:hover {
+  text-decoration: underline;
+}
+
+/* Images */
+.article-content img {
+  border-radius: 1rem;
+}
