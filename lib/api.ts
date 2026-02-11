@@ -1,0 +1,32 @@
+const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+
+export async function getPosts() {
+  const res = await fetch(
+    `${baseUrl}/wp-json/wp/v2/posts?_embed`
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch posts");
+  }
+
+  return res.json();
+}
+
+export async function getPostsByCategory(slug: string, limit = 4) {
+  const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+
+  const catRes = await fetch(
+    `${baseUrl}/wp-json/wp/v2/categories?slug=${slug}`
+  );
+  const catData = await catRes.json();
+
+  if (!catData.length) return [];
+
+  const categoryId = catData[0].id;
+
+  const postRes = await fetch(
+    `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=${limit}&_embed`
+  );
+
+  return postRes.json();
+}
