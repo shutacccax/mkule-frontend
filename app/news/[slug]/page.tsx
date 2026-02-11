@@ -281,31 +281,62 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
         </div>
 
         {/* --- RELATED POSTS --- */}
+        {/* --- RELATED POSTS --- */}
         {relatedPosts.length > 0 && (
           <section className="mt-24 pt-12 border-t border-gray-100">
-            <h3 className="text-sm font-black uppercase tracking-widest text-gray-500 mb-10">
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-10">
               More from this section
             </h3>
             <div className="grid md:grid-cols-3 gap-10">
-              {relatedPosts.map((related: any) => (
-                <article key={related.id} className="group space-y-4">
-                  <a href={`/news/${related.slug}`} className="block aspect-[4/3] overflow-hidden rounded-lg bg-gray-100">
-                    {related._embedded?.["wp:featuredmedia"] && (
-                      <img
-                        src={related._embedded["wp:featuredmedia"][0].source_url}
-                        alt=""
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              {relatedPosts.map((related: any) => {
+                // Extract author name from embedded data
+                const relAuthorName = related._embedded?.author?.[0]?.name || "Staff";
+
+                return (
+                  <article key={related.id} className="group space-y-4">
+                    {/* Thumbnail */}
+                    <a href={`/news/${related.slug}`} className="block aspect-[4/3] overflow-hidden rounded-sm bg-gray-100 shadow-sm">
+                      {related._embedded?.["wp:featuredmedia"] && (
+                        <img
+                          src={related._embedded["wp:featuredmedia"][0].source_url}
+                          alt=""
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                      )}
+                    </a>
+
+                    {/* Content */}
+                    <div className="space-y-2">
+                      <a href={`/news/${related.slug}`}>
+                        <h4
+                          className="font-serif font-bold text-lg leading-snug group-hover:text-brand transition-colors line-clamp-2"
+                          dangerouslySetInnerHTML={{ __html: related.title.rendered }}
+                        />
+                      </a>
+
+                      {/* Excerpt */}
+                      <div 
+                        className="text-xs text-gray-500 line-clamp-2 font-light leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: related.excerpt.rendered }}
                       />
-                    )}
-                  </a>
-                  <a href={`/news/${related.slug}`}>
-                    <h4
-                      className="font-serif font-bold leading-snug group-hover:text-brand transition-colors"
-                      dangerouslySetInnerHTML={{ __html: related.title.rendered }}
-                    />
-                  </a>
-                </article>
-              ))}
+
+                      {/* Byline & Date */}
+                      <div className="pt-2 flex flex-col gap-0.5">
+                        <p className="text-[9px] font-bold uppercase tracking-tighter text-gray-900">
+                          / {relAuthorName}
+                        </p>
+                        <p className="text-[9px] font-medium uppercase tracking-tighter text-gray-400">
+                          {new Date(related.date).toLocaleDateString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric'
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           </section>
         )}

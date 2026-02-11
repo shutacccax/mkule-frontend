@@ -8,6 +8,8 @@ import Footer from "@/components/Footer";
 import RouteLoader from "@/components/RouteLoader";
 import { GoogleAnalytics } from '@next/third-parties/google'
 import FacebookSDK from "@/components/FacebookSDK";
+import { Analytics } from "@vercel/analytics/next"
+import ScrollToTop from "@/components/ScrollToTop";
 
 export const revalidate = 60;
 
@@ -49,13 +51,15 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <RouteLoader />
         </Suspense>
-        
+
         <FacebookSDK />
 
         {children}
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />
 
         <Footer />
+
+        <ScrollToTop />
         
 
       </body>
