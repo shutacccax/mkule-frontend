@@ -5,7 +5,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function Header() {
+export default function Header({
+  latestIssueUrl,
+}: {
+  latestIssueUrl?: string;
+}) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -20,9 +24,21 @@ export default function Header() {
       if (offset > 60) setScrolled(true);
       else if (offset < 10) setScrolled(false);
     };
+
+    const now = new Date();
+    const formatted = now.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    setCurrentDate(formatted);
+
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -34,6 +50,9 @@ export default function Header() {
     
     setSearchOpen(false); 
   }
+
+  const [currentDate, setCurrentDate] = useState("");
+
 
   const navItems = ["News", "Features", "Culture", "Opinion", "Editorial", "Grafx", "Issues"];
 
@@ -53,6 +72,29 @@ export default function Header() {
             <div className="h-full bg-brand animate-indeterminate-bar"></div>
           </div>
         )}
+
+        {/* --- TOP DATE BAR --- */}
+        <div
+          className={`border-b border-gray-100 bg-white transition-all duration-500 overflow-hidden ${
+            scrolled ? "max-h-0 opacity-0" : "max-h-16 opacity-100"
+          }`}
+        >
+          <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between text-[10px] md:text-[11px] font-sans uppercase tracking-widest text-gray-500">
+            
+            <span>{currentDate}</span>
+
+            <a
+              href={latestIssueUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-brand transition-colors font-bold"
+            >
+              Latest Issue →
+            </a>
+          </div>
+        </div>
+
+
 
         <div className="max-w-7xl mx-auto px-6">
           <div className={`flex items-center justify-between transition-all duration-500 ${
@@ -79,18 +121,23 @@ export default function Header() {
             {/* CENTER: Logo */}
             <div className="flex-none flex items-center justify-center">
               <Link href="/" className="block relative group">
-                <Image
-                  src="/logo-header.png"
-                  alt="Mkule Logo"
-                  width={300}
-                  height={80}
-                  className={`object-contain transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] w-auto ${
-                    scrolled ? "h-8" : "h-10 md:h-20"
+                <div
+                  className={`relative transition-all duration-500 ${
+                    scrolled ? "h-8 w-[120px]" : "h-10 md:h-20 w-[180px] md:w-[300px]"
                   }`}
-                  priority
-                />
+                >
+                  <Image
+                    src="/logo-header.png"
+                    alt="Mkule Logo"
+                    fill
+                    sizes="(max-width: 768px) 180px, 300px"
+                    className="object-contain"
+                    priority
+                  />
+                </div>
               </Link>
             </div>
+
 
             {/* RIGHT: Search Toggle */}
             <div className="flex-1 basis-0 flex justify-end items-center">

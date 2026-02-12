@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import { Suspense } from "react";
 import Pagination from "@/components/Pagination";
 import Link from "next/link";
+import Image from "next/image";
 
 // --- 1. DYNAMIC METADATA & NOINDEX ---
 export async function generateMetadata({ searchParams }: any): Promise<Metadata> {
@@ -12,7 +12,7 @@ export async function generateMetadata({ searchParams }: any): Promise<Metadata>
     title: query ? `Search results for "${query}" | Mkule` : "Search | Mkule",
     description: `Search results for ${query} from The Manila Collegian.`,
     robots: {
-      index: false, // Prevents search engines from indexing the results page
+      index: false,
       follow: true,
     },
   };
@@ -34,8 +34,8 @@ interface Post {
 async function getSearchResults(query: string, page: number, order: "asc" | "desc" = "desc") {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?search=${encodeURIComponent(query)}&per_page=6&page=${page}&_embed&order=${order}`,
-    { cache: "no-store" }
+    `${baseUrl}/wp-json/wp/v2/posts?search=${encodeURIComponent(query)}&per_page=10&page=${page}&_embed&order=${order}`,
+    { cache: "no-store" } // Search must be dynamic
   );
 
   if (!res.ok) return { posts: [], totalPages: 0 };
@@ -62,7 +62,7 @@ export default async function SearchPage({
   const { posts: results, totalPages } = data;
 
   return (
-    <main className="max-w-7xl mx-auto px-6 py-16">
+    <main className="max-w-5xl mx-auto px-6 py-16">
       
       {/* --- HEADER --- */}
       <header className="mb-12">
@@ -106,7 +106,7 @@ export default async function SearchPage({
         </div>
       </header>
 
-      {/* --- RESULTS GRID --- */}
+      {/* --- RESULTS LIST --- */}
       {results.length === 0 ? (
         <div className="py-20 text-center space-y-4">
           <p className="font-serif italic text-2xl text-gray-400">
@@ -121,36 +121,44 @@ export default async function SearchPage({
         </div>
       ) : (
         <>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-16">
+          <div className="space-y-10">
             {results.map((post: Post) => (
-              <article key={post.id} className="group space-y-5">
-                <Link
-                  href={`/news/${post.slug}`}
-                  className="relative block aspect-[3/2] overflow-hidden rounded-xl bg-gray-100 shadow-sm"
-                >
-                  {post._embedded?.["wp:featuredmedia"] ? (
-                    <img
-                      src={post._embedded["wp:featuredmedia"][0].source_url}
-                      alt=""
-                      className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300 font-serif italic text-sm">
-                      Mkule News
-                    </div>
-                  )}
-                </Link>
+              <article 
+                key={post.id} 
+                className="group flex flex-col md:flex-row gap-6 md:gap-10 pb-10 border-b border-gray-100 last:border-0"
+              >
+                {/* Image Section (Left) */}
+                <div className="md:w-[35%] shrink-0">
+                  <Link
+                    href={`/news/${post.slug}`}
+                    className="relative block aspect-[16/10] overflow-hidden rounded-md bg-gray-100 shadow-sm"
+                  >
+                    {post._embedded?.["wp:featuredmedia"] ? (
+                      <Image
+                        src={post._embedded["wp:featuredmedia"][0].source_url}
+                        alt={post.title.rendered}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        className="object-cover grayscale-[0.3] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300 font-serif italic text-sm">
+                        Mkule News
+                      </div>
+                    )}
+                  </Link>
+                </div>
 
-                <div className="space-y-3">
+                {/* Content Section (Right) */}
+                <div className="flex-1 flex flex-col justify-center space-y-2.5">
                   <div className="flex items-center gap-3">
                     <p className="text-[10px] font-sans font-black uppercase tracking-widest text-brand">
                       {post._embedded?.["wp:term"]?.[0]?.[0]?.name || "Article"}
                     </p>
-                    <div className="h-[1px] flex-1 bg-gray-100" />
-                    {/* Integrated PH Time */}
+                    <div className="h-[1px] w-6 bg-gray-200" />
                     <time className="text-[10px] font-sans font-bold uppercase tracking-tighter text-gray-400 whitespace-nowrap">
                         {new Date(post.date).toLocaleDateString('en-US', { 
-                          month: 'short', 
+                          month: 'long', 
                           day: 'numeric', 
                           year: 'numeric',
                           timeZone: 'Asia/Manila' 
@@ -160,15 +168,21 @@ export default async function SearchPage({
 
                   <Link href={`/news/${post.slug}`}>
                     <h2
-                      className="text-xl font-serif font-bold leading-tight group-hover:text-brand transition-colors"
+                      className="text-2xl md:text-3xl font-serif font-bold leading-tight group-hover:text-brand transition-colors"
                       dangerouslySetInnerHTML={{ __html: post.title.rendered }}
                     />
                   </Link>
 
                   <div
-                    className="text-sm text-gray-600 line-clamp-3 font-normal tracking-tight leading-relaxed"
+                    className="text-sm text-gray-600 line-clamp-2 md:line-clamp-3 font-normal tracking-tight leading-relaxed max-w-2xl"
                     dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
                   />
+                  
+                  <div className="pt-2">
+                     <p className="text-[10px] font-bold uppercase tracking-tighter text-gray-900">
+                        / {post._embedded?.author?.[0]?.name || "Staff"}
+                     </p>
+                  </div>
                 </div>
               </article>
             ))}

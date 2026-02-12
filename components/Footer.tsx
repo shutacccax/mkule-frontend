@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -5,126 +7,94 @@ import Link from "next/link";
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
-  // Standard category list (7 items)
-  const categories = ["News", "Features", "Culture", "Opinion", "Editorial", "Grafx", "Issues"];
-
   return (
-    <footer className="bg-gray-100 border-t border-gray-200 mt-24">
+    <footer className="mt-24 border-t border-gray-200 bg-gray-50 text-gray-900">
       <div className="max-w-7xl mx-auto px-6 py-16">
-        {/* --- FOOTER CONTENT CONTAINER --- */}
         <div className="grid md:grid-cols-2 gap-12 items-start text-center md:text-left">
-        
-        {/* LEFT SIDE — BRAND + IDENTITY (Centered on Mobile) */}
-        <div className="space-y-4 md:space-y-6 flex flex-col items-center md:items-start">
+          
+          {/* LEFT SIDE — BRAND + IDENTITY */}
+          <div className="space-y-4 md:space-y-6 flex flex-col items-center md:items-start">
             <Link href="/" className="block">
-                {/* MOBILE: 160px width
-                WEB (md): 240px width 
-                */}
-                <div className="relative w-[190px] md:w-[240px] aspect-[2.5/1]">
+              <div className="relative w-[190px] md:w-[240px] aspect-[2.5/1]">
                 <Image 
-                    src="/logo-header.png" 
-                    alt="Mkule Logo" 
-                    fill
-                    className="object-contain"
-                    priority 
+                  src="/logo-header.png" 
+                  alt="Mkule Logo" 
+                  fill 
+                  className="object-contain" 
+                  priority 
                 />
-                </div>
+              </div>
             </Link>
 
-            <div className="space-y-2 text-center md:text-left">
-                {/* MOBILE: text-[9px]
-                WEB (md): text-[11px] 
-                */}
-                <p className="text-[11px] md:text-[14px] font-sans tracking-tight text-gray-500">
+            <div className="space-y-2">
+              <p className="text-[11px] md:text-[14px] font-sans tracking-tight text-gray-600">
                 Official Student Publication of the University of the Philippines Manila
-                </p>
-                
-                {/* MOBILE: text-[9px]
-                WEB (md): text-[10px] 
-                */}
-                <p className="text-[9px] md:text-[11px] font-sans font-bold uppercase tracking-[0.3em] text-brand">
+              </p>
+              <p className="text-[9px] md:text-[11px] font-sans font-bold uppercase tracking-[0.3em] text-brand">
                 Magna est veritas et prevaelebit
-                </p>
+              </p>
             </div>
 
-            <div className="text-[13px] md:text-sm text-gray-600 leading-relaxed space-y-2 text-center md:text-left">
-                <p>
-                4th Floor Student Center,<br />
-                University of the Philippines Manila,<br />
-                Ermita, Philippines
-                </p>
-                <p>
+            <div className="text-[13px] md:text-sm text-gray-700 leading-relaxed space-y-2">
+              <p>4th Floor Student Center,<br />UP Manila, Ermita, Philippines</p>
+              <p>
                 <a href="mailto:mkule.upm@up.edu.ph" className="hover:text-brand transition-colors font-bold">
-                    mkule.upm@up.edu.ph
+                  mkule.upm@up.edu.ph
                 </a>
-                </p>
+              </p>
             </div>
-            </div>
+          </div>
 
-        {/* RIGHT SIDE — NAVIGATION & SOCIALS */}
-        <div className="md:text-right flex flex-col items-center md:items-end w-full">
-            
-            {/* SECTIONAL NAVIGATION (4-3 Split)
-                Tightened md:mb-8 to better match the left side's density
-            */}
-            <nav className="flex flex-col items-center md:items-end gap-y-6 mb-8 md:mb-8 w-full md:w-auto">
-            
-            {/* Row 1: 4 Categories */}
-            <div className="flex justify-center md:justify-end w-full md:w-auto gap-x-6 sm:gap-x-8">
+          {/* RIGHT SIDE — NAVIGATION & SOCIALS */}
+          <div className="md:text-right flex flex-col items-center md:items-end w-full">
+            <nav className="flex flex-col items-center md:items-end gap-y-6 mb-8 w-full md:w-auto">
+              <div className="flex justify-center md:justify-end w-full md:w-auto gap-x-6 sm:gap-x-8">
                 {["News", "Features", "Culture", "Opinion"].map((cat) => (
-                <Link 
+                  <Link 
                     key={cat} 
                     href={`/category/${cat.toLowerCase()}`} 
-                    className="text-[11px] font-sans font-black uppercase tracking-[0.15em] text-gray-600 hover:text-brand transition-colors"
-                >
+                    className="text-[11px] font-sans font-black uppercase tracking-[0.15em] text-gray-500 hover:text-brand transition-all"
+                  >
                     {cat}
-                </Link>
+                  </Link>
                 ))}
-            </div>
-
-            {/* Row 2: 3 Categories */}
-            <div className="flex justify-center md:justify-end w-full md:w-auto gap-x-10 sm:gap-x-12">
+              </div>
+              <div className="flex justify-center md:justify-end w-full md:w-auto gap-x-10 sm:gap-x-12">
                 {["Editorial", "Grafx", "Issues"].map((cat) => (
-                <Link 
+                  <Link 
                     key={cat} 
                     href={cat === "Issues" ? "/issues" : `/category/${cat.toLowerCase()}`} 
-                    className="text-[11px] font-sans font-black uppercase tracking-[0.15em] text-gray-600 hover:text-brand transition-colors"
-                >
+                    className="text-[11px] font-sans font-black uppercase tracking-[0.15em] text-gray-500 hover:text-brand transition-all"
+                  >
                     {cat}
-                </Link>
+                  </Link>
                 ))}
-            </div>
+              </div>
             </nav>
 
-            {/* INSTITUTIONAL NAVIGATION 
-                Reduced md:mb-8 and tightened border padding (pt-4) 
-            */}
-            <nav className="flex justify-center md:justify-end gap-x-6 gap-y-2 text-[10px] font-sans font-bold uppercase tracking-widest text-gray-400 mb-8 md:mb-8 border-t border-gray-200 pt-4 w-full md:w-auto">
-            <Link href="/about" className="hover:text-black transition-colors">About Us</Link>
-            <Link href="/editorial-board" className="hover:text-black transition-colors">Editorial Board</Link>
-            <Link href="/contact" className="hover:text-black transition-colors">Contact Us</Link>
+            <nav className="flex justify-center md:justify-end gap-x-6 text-[10px] font-sans font-bold uppercase tracking-widest text-gray-400 mb-8 border-t border-gray-200 pt-4 w-full md:w-auto">
+              <Link href="/about" className="hover:text-brand transition-colors">About Us</Link>
+              <Link href="/editorial-board" className="hover:text-brand transition-colors">Editorial Board</Link>
+              <Link href="/contact" className="hover:text-brand transition-colors">Contact Us</Link>
             </nav>
 
-            {/* SOCIAL MEDIA (Compact gap md:mb-4) */}
-            <div className="flex items-center justify-center md:justify-end gap-4 mb-6 md:mb-4">
-            <SocialIcon platform="facebook" href="https://facebook.com/themanilacollegian" />
-            <SocialIcon platform="instagram" href="https://instagram.com/themanilacollegian" />
-            <SocialIcon platform="twitter" href="https://twitter.com/mkule" />
-            <SocialIcon platform="tiktok" href="https://tiktok.com/@themanilacollegian" />
+            <div className="flex items-center justify-center md:justify-end gap-4 mb-6">
+              <SocialIcon platform="facebook" href="https://facebook.com/themanilacollegian" />
+              <SocialIcon platform="instagram" href="https://instagram.com/themanilacollegian" />
+              <SocialIcon platform="twitter" href="https://twitter.com/mkule" />
+              <SocialIcon platform="tiktok" href="https://tiktok.com/@themanilacollegian" />
             </div>
 
-            {/* COPYRIGHT */}
-            <p className="text-[10px] md:text-[11px] font-sans font-bold uppercase tracking-widest text-gray-400 text-center md:text-right">
-            © {currentYear} Mkule. All Rights Reserved.
+            <p className="text-[10px] md:text-[11px] font-sans font-bold uppercase tracking-widest text-gray-400">
+              © {currentYear} Mkule. All Rights Reserved.
             </p>
-        </div>
+          </div>
         </div>
       </div>
     </footer>
   );
 }
 
-// ... (SocialIcon component remains exactly the same)
 function SocialIcon({ href, platform }: { href: string; platform: string }) {
   const icons: Record<string, React.ReactElement> = {
     facebook: (

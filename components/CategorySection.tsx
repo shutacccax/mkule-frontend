@@ -1,6 +1,28 @@
-import Link from "next/link"; // Use Link for faster navigation
+import Link from "next/link";
+import Image from "next/image";
 
-export default function CategorySection({ title, secondaryTitle, posts, secondaryPosts, layout }: any) {
+// --- TYPES ---
+interface Post {
+  id: number;
+  slug: string;
+  date: string;
+  title: { rendered: string };
+  excerpt: { rendered: string };
+  _embedded?: {
+    author?: Array<{ name: string }>;
+    "wp:featuredmedia"?: Array<{ source_url: string }>;
+  };
+}
+
+interface CategorySectionProps {
+  title: string;
+  secondaryTitle?: string;
+  posts: Post[];
+  secondaryPosts?: Post[];
+  layout?: "editorial" | "split" | "news"; 
+}
+
+export default function CategorySection({ title, secondaryTitle, posts, secondaryPosts, layout }: CategorySectionProps) {
   if (!posts || !posts.length) return null;
 
   // --- LAYOUT: EDITORIAL (60%) & OPINION (40%) ---
@@ -8,36 +30,36 @@ export default function CategorySection({ title, secondaryTitle, posts, secondar
     const featured = posts[0];
     return (
       <section className="py-2">
-        {/* MOBILE MODE: Show as a standard grid (Matches default news layout) 
-          Visible only on small screens, hidden on Large (lg)
-        */}
+        {/* MOBILE MODE: Standard grid */}
         <div className="lg:hidden space-y-8">
           <div className="flex justify-between items-center">
             <Tag title={title} />
             <ViewAll link={title} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {posts.slice(0, 4).map((post: any) => (
+            {posts.slice(0, 4).map((post) => (
               <CompactCard key={post.id} post={post} />
             ))}
           </div>
           
           <hr className="border-gray-100 my-8" />
 
-          <div className="flex justify-between items-center">
-            <Tag title={secondaryTitle} />
-            <ViewAll link={secondaryTitle} />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {secondaryPosts?.slice(0, 2).map((post: any) => (
-              <CompactCard key={post.id} post={post} />
-            ))}
-          </div>
+          {secondaryTitle && (
+            <>
+                <div className="flex justify-between items-center">
+                    <Tag title={secondaryTitle} />
+                    <ViewAll link={secondaryTitle} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    {secondaryPosts?.slice(0, 2).map((post) => (
+                    <CompactCard key={post.id} post={post} />
+                    ))}
+                </div>
+            </>
+          )}
         </div>
 
-        {/* DESKTOP MODE: Keep your 60/40 Split 
-          Hidden on mobile, visible on Large (lg)
-        */}
+        {/* DESKTOP MODE: 60/40 Split */}
         <div className="hidden lg:grid lg:grid-cols-10 gap-12">
           {/* Main Editorial - 60% */}
           <div className="lg:col-span-6 group">
@@ -46,11 +68,16 @@ export default function CategorySection({ title, secondaryTitle, posts, secondar
               <ViewAll link={title} />
             </div>
             <Link href={`/news/${featured.slug}`} className="block space-y-4">
-              <div className="aspect-[16/10] overflow-hidden rounded-lg bg-gray-100 shadow-sm">
-                <img 
-                  src={featured._embedded?.["wp:featuredmedia"]?.[0]?.source_url} 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
-                />
+              <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-gray-100 shadow-sm">
+                {featured._embedded?.["wp:featuredmedia"] && (
+                    <Image 
+                      src={featured._embedded["wp:featuredmedia"][0].source_url} 
+                      alt={featured.title.rendered}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105" 
+                    />
+                )}
               </div>
               <h3 className="text-4xl font-serif font-black leading-tight group-hover:text-brand transition duration-300" dangerouslySetInnerHTML={{ __html: featured.title.rendered }} />
               <div className="text-gray-700 text-lg font-normal line-clamp-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: featured.excerpt.rendered }} />
@@ -61,18 +88,23 @@ export default function CategorySection({ title, secondaryTitle, posts, secondar
           {/* Opinion Column - 40% */}
           <div className="lg:col-span-4 lg:border-l lg:border-gray-100 lg:pl-8 flex flex-col">
             <div className="flex justify-between items-center mb-6">
-              <Tag title={secondaryTitle} />
-              <ViewAll link={secondaryTitle} />
+              {secondaryTitle && <Tag title={secondaryTitle} />}
+              {secondaryTitle && <ViewAll link={secondaryTitle} />}
             </div>
             
             <div className="flex-1 flex flex-col justify-between space-y-2"> 
-              {secondaryPosts?.slice(0, 4).map((post: any) => (
+              {secondaryPosts?.slice(0, 4).map((post) => (
                 <Link key={post.id} href={`/news/${post.slug}`} className="group grid grid-cols-12 gap-4 items-start border-b border-gray-50 pb-6 last:border-0 last:pb-0">
-                  <div className="col-span-4 aspect-square overflow-hidden rounded-md bg-gray-100 shadow-sm">
-                     <img 
-                        src={post._embedded?.["wp:featuredmedia"]?.[0]?.source_url} 
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                     />
+                  <div className="relative col-span-4 aspect-square overflow-hidden rounded-md bg-gray-100 shadow-sm">
+                     {post._embedded?.["wp:featuredmedia"] && (
+                        <Image 
+                            src={post._embedded["wp:featuredmedia"][0].source_url} 
+                            alt={post.title.rendered}
+                            fill
+                            sizes="120px"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                        />
+                     )}
                   </div>
                   <div className="col-span-8 space-y-2">
                     <h5 className="font-serif font-bold text-base leading-snug group-hover:text-brand transition duration-300 line-clamp-2" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
@@ -97,16 +129,16 @@ export default function CategorySection({ title, secondaryTitle, posts, secondar
              <ViewAll link={title} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {posts.slice(0, 2).map((post: any) => <CompactCard key={post.id} post={post} />)}
+            {posts.slice(0, 2).map((post) => <CompactCard key={post.id} post={post} />)}
           </div>
         </div>
         <div className="lg:border-l lg:border-gray-100 lg:pl-8">
           <div className="flex justify-between items-center mb-6">
-             <Tag title={secondaryTitle} />
-             <ViewAll link={secondaryTitle} />
+             {secondaryTitle && <Tag title={secondaryTitle} />}
+             {secondaryTitle && <ViewAll link={secondaryTitle} />}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            {secondaryPosts?.slice(0, 2).map((post: any) => <CompactCard key={post.id} post={post} />)}
+            {secondaryPosts?.slice(0, 2).map((post) => <CompactCard key={post.id} post={post} />)}
           </div>
         </div>
       </section>
@@ -121,13 +153,13 @@ export default function CategorySection({ title, secondaryTitle, posts, secondar
         <ViewAll link={title} />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-        {posts.slice(0, 4).map((post: any) => <CompactCard key={post.id} post={post} />)}
+        {posts.slice(0, 4).map((post) => <CompactCard key={post.id} post={post} />)}
       </div>
     </section>
   );
 }
 
-// UI HELPERS (Unchanged)
+// UI HELPERS
 function Tag({ title, color = "bg-brand" }: { title: string, color?: string }) {
   return (
     <div className={`inline-block ${color} px-3 py-1 rounded-sm shadow-sm`}>
@@ -152,16 +184,31 @@ function Metadata({ author, date }: { author?: string, date: string }) {
   return (
     <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tighter text-gray-400">
        <span className="text-gray-700 italic">/ {author || "Staff"}</span>
-       <span>{new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+       <span>
+         {new Date(date).toLocaleDateString('en-US', { 
+           month: 'short', 
+           day: 'numeric',
+           year: 'numeric'
+         })}
+       </span>
     </div>
   );
 }
 
-function CompactCard({ post }: any) {
+
+function CompactCard({ post }: { post: Post }) {
   return (
     <Link href={`/news/${post.slug}`} className="group space-y-4">
-      <div className="aspect-[4/3] overflow-hidden rounded-md bg-gray-100 shadow-sm">
-        <img src={post._embedded?.["wp:featuredmedia"]?.[0]?.source_url} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+      <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-gray-100 shadow-sm">
+        {post._embedded?.["wp:featuredmedia"] && (
+            <Image 
+                src={post._embedded["wp:featuredmedia"][0].source_url} 
+                alt={post.title.rendered}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
+                className="object-cover group-hover:scale-105 transition-transform duration-700" 
+            />
+        )}
       </div>
       <div className="space-y-3">
         <h3 className="font-serif font-bold text-lg leading-tight group-hover:text-brand transition" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />

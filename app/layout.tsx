@@ -7,7 +7,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RouteLoader from "@/components/RouteLoader";
 import { GoogleAnalytics } from '@next/third-parties/google'
-import FacebookSDK from "@/components/FacebookSDK";
 import { Analytics } from "@vercel/analytics/next"
 import ScrollToTop from "@/components/ScrollToTop";
 
@@ -23,6 +22,33 @@ const libreFranklin = Libre_Franklin({
   subsets: ['latin'],
   variable: '--font-sans', // Named for easy CSS reference
 });
+
+async function getLatestIssuePdf() {
+  const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
+
+  // Get Issues category
+  const catRes = await fetch(
+    `${baseUrl}/wp-json/wp/v2/categories?slug=issues`,
+    { next: { revalidate: 3600 } }
+  );
+
+  const catData = await catRes.json();
+  const categoryId = catData[0]?.id;
+  if (!categoryId) return null;
+
+  // Get most recent post in that category
+  const postsRes = await fetch(
+    `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=1&orderby=date&order=desc`,
+    { next: { revalidate: 60 } }
+  );
+
+  const posts = await postsRes.json();
+
+  return posts?.[0]?.acf?.pdf_link || null;
+}
+
+const latestIssuePdf = await getLatestIssuePdf();
+
 
 export const metadata: Metadata = {
   title: {
@@ -45,14 +71,13 @@ export default function RootLayout({
       >
 
         {/* Sticky Navbar */}
-        <Header />
+        <Header latestIssueUrl={latestIssuePdf} />
+
 
         <div id="fb-root"></div>
         <Suspense fallback={null}>
           <RouteLoader />
         </Suspense>
-
-        <FacebookSDK />
 
         {children}
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ""} />

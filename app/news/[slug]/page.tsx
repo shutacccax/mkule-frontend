@@ -8,10 +8,9 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
-  const cacheBuster = Math.floor(Date.now() / 60000); 
-
+  // Removed cacheBuster for better production performance
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?slug=${slug}&_embed&cb=${cacheBuster}`,
+    `${baseUrl}/wp-json/wp/v2/posts?slug=${slug}&_embed`,
     { next: { revalidate: 60 } }
   );
 
@@ -55,7 +54,7 @@ interface Post {
   _embedded?: {
     author?: Array<{ 
         name: string;
-        slug: string; // Added slug for clickable byline
+        slug: string; 
     }>;
     "wp:featuredmedia"?: Media[];
     "wp:term"?: Array<Array<{ name: string }>>;
@@ -81,10 +80,9 @@ function getReadingTime(content: string): number {
 
 async function getPost(slug: string) {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
-  const cacheBuster = Math.floor(Date.now() / 60000); 
-
+  // Removed cacheBuster
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?slug=${slug}&_embed&cb=${cacheBuster}`,
+    `${baseUrl}/wp-json/wp/v2/posts?slug=${slug}&_embed`,
     { next: { revalidate: 60 } }
   );
   if (!res.ok) return null;
@@ -94,10 +92,9 @@ async function getPost(slug: string) {
 
 async function getRelatedPosts(categoryId: number, currentPostId: number) {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
-  const cacheBuster = Math.floor(Date.now() / 60000); 
-
+  // Removed cacheBuster
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=3&exclude=${currentPostId}&_embed&cb=${cacheBuster}`,
+    `${baseUrl}/wp-json/wp/v2/posts?categories=${categoryId}&per_page=3&exclude=${currentPostId}&_embed`,
     { next: { revalidate: 60 } }
   );
   if (!res.ok) return [];
@@ -219,7 +216,6 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
             <div className="flex flex-col justify-center">
               <p className="text-[10px] font-sans font-black uppercase tracking-widest text-gray-400 leading-none mb-1">Written By</p>
               
-              {/* Functional clickable link to author slug */}
               {authorSlug ? (
                 <a 
                   href={`/author/${authorSlug}`}
@@ -249,11 +245,16 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
         {/* --- 4. FEATURED IMAGE --- */}
         {post._embedded?.["wp:featuredmedia"] && (
           <figure className="mb-20">
-            <img
-              src={post._embedded["wp:featuredmedia"][0].source_url}
-              alt={post._embedded["wp:featuredmedia"][0].alt_text || ""}
-              className="w-full h-auto rounded-2xl shadow-sm"
-            />
+            <div className="relative w-full h-auto aspect-[16/9] rounded-2xl overflow-hidden shadow-sm">
+                <Image
+                src={post._embedded["wp:featuredmedia"][0].source_url}
+                alt={post._embedded["wp:featuredmedia"][0].alt_text || ""}
+                fill
+                priority
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 900px"
+                className="object-cover"
+                />
+            </div>
             {post._embedded["wp:featuredmedia"][0].caption?.rendered && (
               <figcaption 
                 className="mt-4 text-xs font-sans font-medium text-gray-500 leading-relaxed border-l border-gray-200 pl-4"
@@ -265,8 +266,8 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
 
         {/* --- 5. CONTENT --- */}
         <article
-        className="prose article-content max-w-none"
-        dangerouslySetInnerHTML={{ __html: post.content.rendered }}
+            className="prose article-content max-w-none"
+            dangerouslySetInnerHTML={{ __html: post.content.rendered }}
         />
 
 
@@ -281,7 +282,6 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
         </div>
 
         {/* --- RELATED POSTS --- */}
-        {/* --- RELATED POSTS --- */}
         {relatedPosts.length > 0 && (
           <section className="mt-24 pt-12 border-t border-gray-100">
             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-10">
@@ -289,18 +289,19 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
             </h3>
             <div className="grid md:grid-cols-3 gap-10">
               {relatedPosts.map((related: any) => {
-                // Extract author name from embedded data
                 const relAuthorName = related._embedded?.author?.[0]?.name || "Staff";
 
                 return (
                   <article key={related.id} className="group space-y-4">
                     {/* Thumbnail */}
-                    <a href={`/news/${related.slug}`} className="block aspect-[4/3] overflow-hidden rounded-sm bg-gray-100 shadow-sm">
+                    <a href={`/news/${related.slug}`} className="block relative aspect-[4/3] overflow-hidden rounded-sm bg-gray-100 shadow-sm">
                       {related._embedded?.["wp:featuredmedia"] && (
-                        <img
+                        <Image
                           src={related._embedded["wp:featuredmedia"][0].source_url}
                           alt=""
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                       )}
                     </a>
@@ -309,18 +310,16 @@ export default async function Article({ params }: { params: Promise<{ slug: stri
                     <div className="space-y-2">
                       <a href={`/news/${related.slug}`}>
                         <h4
-                          className="font-serif font-bold text-lg leading-snug group-hover:text-brand transition-colors line-clamp-2"
+                          className="font-serif font-bold text-lg leading-snug group-hover:text-brand transition-colors line-clamp-3"
                           dangerouslySetInnerHTML={{ __html: related.title.rendered }}
                         />
                       </a>
 
-                      {/* Excerpt */}
                       <div 
-                        className="text-xs text-gray-500 line-clamp-2 font-light leading-relaxed"
+                        className="text-s text-gray-500 line-clamp-2 font-light leading-snug mt-2"
                         dangerouslySetInnerHTML={{ __html: related.excerpt.rendered }}
                       />
 
-                      {/* Byline & Date */}
                       <div className="pt-2 flex flex-col gap-0.5">
                         <p className="text-[9px] font-bold uppercase tracking-tighter text-gray-900">
                           / {relAuthorName}

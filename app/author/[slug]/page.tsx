@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Pagination from "@/components/Pagination";
+import Image from "next/image";
 
 // --- TYPES ---
 interface Author {
@@ -25,11 +26,10 @@ interface Post {
 // --- API HELPERS ---
 async function getAuthor(slug: string) {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
-  const cacheBuster = Math.floor(Date.now() / 60000);
 
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/users?slug=${slug}&cb=${cacheBuster}`,
-    { next: { revalidate: 60 } }
+    `${baseUrl}/wp-json/wp/v2/users?slug=${slug}`,
+    { next: { revalidate: 3600 } } // Authors change rarely, cache longer
   );
 
   if (!res.ok) return null;
@@ -39,11 +39,10 @@ async function getAuthor(slug: string) {
 
 async function getAuthorPosts(authorId: number, page: number) {
   const baseUrl = process.env.NEXT_PUBLIC_WP_URL;
-  const cacheBuster = Math.floor(Date.now() / 60000);
 
   // Fetching 6 posts per page
   const res = await fetch(
-    `${baseUrl}/wp-json/wp/v2/posts?author=${authorId}&_embed&per_page=6&page=${page}&cb=${cacheBuster}`,
+    `${baseUrl}/wp-json/wp/v2/posts?author=${authorId}&_embed&per_page=6&page=${page}`,
     { next: { revalidate: 60 } }
   );
 
@@ -126,12 +125,14 @@ export default async function AuthorPage({
                 <article key={post.id} className="group grid md:grid-cols-12 gap-8 pb-12 border-b border-gray-100 last:border-0">
                   
                   <div className="md:col-span-4">
-                    <a href={`/news/${post.slug}`} className="block overflow-hidden rounded-sm bg-gray-100 aspect-[4/3]">
+                    <a href={`/news/${post.slug}`} className="block relative overflow-hidden rounded-sm bg-gray-100 aspect-[4/3] shadow-sm">
                       {post._embedded?.["wp:featuredmedia"] ? (
-                        <img
+                        <Image
                           src={post._embedded["wp:featuredmedia"][0].source_url}
                           alt=""
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300 font-serif italic text-xs">
@@ -159,16 +160,16 @@ export default async function AuthorPage({
                     />
                     
                     <div className="pt-2 flex flex-col gap-1">
-                       <p className="text-[10px] font-bold uppercase tracking-tighter text-gray-900">
-                         / {author.name}
-                       </p>
-                       <p className="text-[10px] font-medium uppercase tracking-tighter text-gray-400">
+                        <p className="text-[10px] font-bold uppercase tracking-tighter text-gray-900">
+                          / {author.name}
+                        </p>
+                        <p className="text-[10px] font-medium uppercase tracking-tighter text-gray-400">
                           {new Date(post.date).toLocaleDateString('en-US', {
                             month: 'long',
                             day: 'numeric',
                             year: 'numeric'
                           })}
-                       </p>
+                        </p>
                     </div>
                   </div>
                 </article>
